@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.json
+
+# LaTeX build artefacts; the PDF itself is committed
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz

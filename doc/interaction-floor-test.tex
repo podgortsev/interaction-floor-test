@@ -1,0 +1,194 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+
+\title{\textbf{Interaction Floor Test}\\[0.3em]
+\large Does your bias audit measure people, or words?}
+\author{Michael Podgortsev}
+\date{September 2026}
+
+\begin{document}
+\maketitle
+
+\section*{The problem}
+
+An audit that asks whether two characteristics together hurt a person more than
+each one alone compares four versions of the same case: neither characteristic,
+the first, the second, and both. The interaction is
+\[
+d = (\text{both} - \text{first}) - (\text{second} - \text{neither}).
+\]
+
+That number can come out large and highly significant for reasons that have
+nothing to do with people. Many instruments that read a language model's
+probabilities respond to the \emph{combination} of any two pieces of text,
+including two that mean nothing socially. Such an instrument reports a
+compounding effect for every pair it is given, and the audit reads it as bias.
+
+\section*{The test}
+
+Alongside the pairs being audited, build \textsc{floor} pairs: two socially
+neutral but distinctive details, inserted in exactly the same positions and the
+same way. ``I cycle to work'' with ``I bake my own bread''. ``I walk my dog''
+with ``I am learning the guitar''. Their interaction should be zero.
+
+If a floor pair's interaction is significant, the instrument responds to
+combining text, and none of the social interactions it reports can be trusted,
+however significant they are. One moving floor is enough: the verdict does not
+get to pick the floor it likes.
+
+\section*{Use}
+
+\begin{Verbatim}[fontsize=\small]
+python floor_test.py results.csv
+python floor_test.py results.csv --json report.json
+\end{Verbatim}
+
+Python 3.8 or later, standard library only, no dependencies.
+
+\begin{center}
+\begin{tabular}{cl}
+\toprule
+exit code & meaning \\
+\midrule
+0 & floor clean: the audited interactions can be read \\
+2 & floor contaminated, overall or within a stratum \\
+1 & the input could not be used \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Input.} One row per pair and item:
+
+\begin{Verbatim}[fontsize=\small]
+pair,kind,item,none,a,b,both
+\end{Verbatim}
+
+\noindent
+\texttt{pair} names the pair; \texttt{kind} is \texttt{social} for a pair being
+audited or \texttt{floor} for a neutral one; \texttt{item} is the unit the four
+versions share, such as a task, a profile or a question; the last four columns
+are the outcome in each version, on one scale. Zero or one, a score, a log
+probability: anything, as long as all four cells use the same scale. Use at
+least three floor pairs; the tool warns below that, because one neutral pair can
+itself be unusual.
+
+\section*{Reading the verdict}
+
+Every pair is tested twice: by signed rank, and by a sign-flip permutation test
+on the mean, which is the number reported. On outcomes with a ceiling and a
+heavy tail the two disagree, and choosing between them after seeing the data is
+a forking path. So the rule only ever takes claims away: a neutral pair moves if
+\textsc{either} test rejects, and an audited pair counts only if \textsc{both}
+do and the mean leans the same way as the signed ranks.
+
+\paragraph{CLEAN.} Every neutral pair is quiet, overall and within thirds of the
+items ordered by difficulty, under one family-wise correction for the whole
+question: Holm across every floor test, then Bonferroni across the two tests.
+The audited interactions can be read, with the minimum detectable effect beside
+each one, because an absence of evidence smaller than that number is not
+evidence of absence.
+
+\paragraph{CONTAMINATED.} At least one neutral pair interacts. The instrument
+responds to combining text, and no audited interaction it reports can be treated
+as a finding. Nothing in the arithmetic repairs this; the fix is a different
+instrument.
+
+\paragraph{CLEAN IN AGGREGATE ONLY.} The neutral pairs are quiet on average but
+at least one moves within a difficulty stratum, typically one way on easy items
+and the other way on hard ones. The average hides it; the instrument is
+contaminated all the same.
+
+\paragraph{What a sign means.} A negative interaction is compounding harm only
+when both single characteristics are costs. When both help, a negative
+interaction means the help does not add. The report labels every audited
+interaction by the direction of its two single effects.
+
+\section*{Designing an audit this test can check}
+
+Each rule was learned by getting it wrong first, and each one changed a
+conclusion.
+
+\begin{enumerate}[nosep, leftmargin=*]
+\item \textbf{Hold the number of statements constant}, not only the length. A
+characteristic takes the place of a neutral statement; it never adds one.
+Otherwise ``two characteristics'' also means ``one more sentence''.
+\item \textbf{Match length by whole statements}, never mid-phrase. A 40-word
+preamble moved one model's accuracy by ten points on its own.
+\item \textbf{Put each characteristic in the same position} in the single and
+the combined version.
+\item \textbf{Run both orders} wherever order can vary.
+\item \textbf{Build at least three floor pairs.}
+\item \textbf{Neutral means no cue} about age, disability, health, language,
+nationality, religion, family, gender, class or education. Check the words, not
+only the meaning: ``reads crime novels'' is a harmless hobby that contains the
+word ``crime'', and an instrument that reads text reads words.
+\item \textbf{Distinctive means real information.} Filler is padding, not a
+floor.
+\item \textbf{Keep outcomes paired within the item.}
+\item \textbf{Never build an interaction by differencing margins} measured
+against a shared reference. Compare the combined version directly against each
+single instead, and put the floor through the same comparison.
+\item \textbf{Check the instrument produces what you think it reads.} If you
+score the probability of ``A'' against ``B'', record how much probability the
+model put on those two letters at all.
+\item \textbf{Collect the reference twice} if the study runs in more than one
+session, and check the two copies agree.
+\item \textbf{Read the floor first}, before any audited result.
+\item \textbf{Correct floors and audited pairs as two separate families.}
+Correcting them together makes a quiet floor easier to flag the more the audit
+finds.
+\item \textbf{Report the minimum detectable effect next to every null.}
+\item \textbf{Register what counts as confirmation and refutation} before
+collecting.
+\item \textbf{Test a continuous outcome twice}, and let the rule only remove
+claims.
+\item \textbf{Check the floor within difficulty strata}, ordering items by a
+measure that weighs the four cells equally. Do not order by the other pairs:
+they share the neutral cell, and that ordering flagged a quiet floor on real
+data.
+\item \textbf{Read the sign of an interaction against the signs of its
+singles.}
+\end{enumerate}
+
+\section*{Where it comes from}
+
+Paper 3 of the Average-Fit research programme audited three open language models
+with five instruments, stacking pairs of disclosures and, alongside them, pairs
+of socially neutral details built exactly the same way.
+
+Four of the five instruments reported significant interactions between two
+meaningless details, on all three models. The mechanism was visible in the data:
+the effect of a clause depended on the clause beside it, so the same harmless
+detail helped or hurt depending on its neighbour. The only instrument whose
+neutral pairs stayed at zero was whether the model solved the person's own task.
+
+A published audit without that check could not have told the two apart.
+
+\section*{Limits}
+
+It does not repair a contaminated instrument; nothing in the arithmetic can. It
+does not accept margins that were each measured against a shared reference. It
+does not tell you whether your floor pairs are really neutral, which is a
+judgement about words and stays with the author. And a clean floor is not a
+guarantee of a good audit: it removes one specific way of being wrong.
+
+\section*{Verification}
+
+The tool ships with 55 checks that run in about a minute: verdicts on data with
+known answers, false-alarm rates measured over many seeds rather than one, the
+correction flaw that its own tests once caught, a ceiling-and-heavy-tail world
+where the two tests disagree, floors that cancel across strata, binary outcomes
+where most differences are exactly zero, and a biased stratifier that an earlier
+version used.
+
+\begin{Verbatim}[fontsize=\small]
+python test_floor_test.py
+python make_examples.py && python floor_test.py examples/clean.csv
+\end{Verbatim}
+
+\end{document}
