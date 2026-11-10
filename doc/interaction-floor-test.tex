@@ -179,16 +179,17 @@ guarantee of a good audit: it removes one specific way of being wrong.
 
 \section*{Verification}
 
-The tool ships with 55 checks that run in about a minute: verdicts on data with
+The tool ships with 63 checks that run in about a minute: verdicts on data with
 known answers, false-alarm rates measured over many seeds rather than one, the
 correction flaw that its own tests once caught, a ceiling-and-heavy-tail world
 where the two tests disagree, floors that cancel across strata, binary outcomes
-where most differences are exactly zero, and a biased stratifier that an earlier
-version used.
+where most differences are exactly zero, a biased stratifier that an earlier
+version used, every refused input, and the two shipped examples reproduced to
+the last digit.
 
 \begin{Verbatim}[fontsize=\small]
-python test_floor_test.py
-python make_examples.py && python floor_test.py examples/clean.csv
+python tests/test_floor_test.py
+python floor_test.py examples/clean.csv
 \end{Verbatim}
 
 \end{document}

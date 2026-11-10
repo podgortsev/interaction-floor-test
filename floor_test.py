@@ -111,7 +111,7 @@ It does not repair a contaminated instrument; nothing in the arithmetic can.
 And it does not accept margins that were each measured against a shared
 reference (for example "A against NONE" and "both against NONE" from a
 two-option choice): differencing those is not an interaction, and a floor built
-that way will move for purely arithmetic reasons. See CHECKLIST.md.
+that way will move for purely arithmetic reasons. See DESIGN.md.
 """
 
 import csv
@@ -138,7 +138,7 @@ class InputError(ValueError):
 def read(path):
     """Returns {pair: {"kind": kind, "items": {item: (none, a, b, both)}}}."""
     try:
-        f = open(path, newline="", encoding="utf-8")
+        f = open(path, newline="", encoding="utf-8-sig")
     except OSError as e:
         raise InputError(f"cannot open {path}: {e}")
     with f:
@@ -158,9 +158,9 @@ def read(path):
             except (TypeError, ValueError):
                 raise InputError(f"line {line}: none, a, b and both must all "
                                  f"be numbers")
-            if any(math.isnan(v) for v in vals):
-                raise InputError(f"line {line}: a cell is NaN; drop the item "
-                                 f"instead")
+            if any(math.isnan(v) or math.isinf(v) for v in vals):
+                raise InputError(f"line {line}: a cell is NaN or infinite; "
+                                 f"drop the item instead")
             pair = (r["pair"] or "").strip()
             item = (r["item"] or "").strip()
             if not pair or not item:
