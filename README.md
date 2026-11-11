@@ -12,8 +12,10 @@ whether any audited interaction can be read at all.
 
 ## Run it
 
-From a clone of this folder, with Python 3.8 or later and nothing installed:
+Python 3.8 or later (the tool uses math.comb), tested on 3.11, nothing to install:
 
+    git clone https://github.com/podgortsev/interaction-floor-test
+    cd interaction-floor-test
     python floor_test.py examples/clean.csv
 
 Output, copied from that run:

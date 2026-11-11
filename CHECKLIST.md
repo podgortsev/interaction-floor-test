@@ -1,9 +1,8 @@
 # Release bar
 
-The eight lines a tool has to pass before it can be offered for the site, from
-`docs/chat-tools.md`, section 3. Checked 2026-11-10, Python 3.11.9 on Windows,
-from a clean clone of this repository. A line is ticked only with the evidence
-beside it.
+The eight lines a tool has to pass before it is published. Checked 2026-11-10,
+Python 3.11.9 on Windows, from a clean clone of this repository. A line is
+ticked only with the evidence beside it.
 
 | | line | evidence |
 |---|---|---|
@@ -16,7 +15,7 @@ beside it.
 | [x] | 7. No dependency that costs money, and no API key required to try it | imports: csv, json, math, random, sys |
 | [x] | 8. The claim in the README is exactly what the tool does, with no "coming soon" | every verdict, exit code and refusal in the README has a test; the Paper 3 claims restate the instrument table in the paper's README |
 
-## Rules from section 4
+## Rules
 
 - Not a CRM, marketing, revenue or integration deliverable: a measurement check
   for bias audits.
@@ -28,7 +27,7 @@ beside it.
   it.
 - English in every file. No em-dashes.
 
-## Not on the site
+## Publication
 
-Passing the bar is not a decision to publish. That decision is made per tool,
-separately, and this repository has no remote.
+Passing the bar is not itself the decision to publish. That is made per tool,
+separately, after the bar.
